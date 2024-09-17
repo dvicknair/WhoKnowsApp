@@ -1,0 +1,6 @@
+﻿@page "/game/{Name}"
+<h3>Game @Name</h3>
+
+@code {
+    [Parameter][EditorRequired] public string Name { get; set; }
+}

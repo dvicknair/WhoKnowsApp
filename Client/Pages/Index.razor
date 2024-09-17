@@ -1,0 +1,31 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="EnterGameRequest" OnValidSubmit="EnterGame">
+    <DataAnnotationsValidator />
+    <label>Who's playing?</label>
+    <InputText @bind-Value="EnterGameRequest.FirstName" />
+    <ValidationMessage For="() => EnterGameRequest.FirstName" />
+    <InputText @bind-Value="EnterGameRequest.LastName" />
+    <ValidationMessage For="() => EnterGameRequest.LastName" />
+    <button type="submit">Raady up</button>
+</EditForm>
+
+@code{
+    [Inject] NavigationManager NavManager { get; set; }
+    public EnterGameRequestDto EnterGameRequest { get; set; } = new();
+
+    private void EnterGame()
+    {
+        NavManager.NavigateTo($"/game/{EnterGameRequest.FirstName}");
+    }
+
+    public class EnterGameRequestDto
+    {
+        [Required]
+        public string? FirstName { get; set; }
+        [Required]
+        public string? LastName { get; set; }
+    }
+}
