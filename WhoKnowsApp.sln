@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WhoKnowsApp.Client", "Clien
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WhoKnowsApp.Shared", "Shared\WhoKnowsApp.Shared.csproj", "{57EBC4E3-BE5E-404C-9837-1975C1040D0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhoKnowsApp.APIClient", "WhoKnowsApp.APIClient\WhoKnowsApp.APIClient.csproj", "{098B6BAC-7F7C-48BB-900E-D33ABCB9126E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhoKnowsApp.APIClient", "APIClient\WhoKnowsApp.APIClient.csproj", "{098B6BAC-7F7C-48BB-900E-D33ABCB9126E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

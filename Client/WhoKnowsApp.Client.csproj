@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\APIClient\WhoKnowsApp.APIClient.csproj" />
     <ProjectReference Include="..\Shared\WhoKnowsApp.Shared.csproj" />
     <ProjectReference Include="..\WhoKnowsApp.APIClient\WhoKnowsApp.APIClient.csproj" />
   </ItemGroup>
