@@ -1,6 +1,16 @@
 ﻿@page "/game/{Name}"
-<h3>Game @Name</h3>
+
+<h3>Game user @Name</h3>
+@foreach(var question in Questions)
+{
+    <div>@question.Name</div>
+}
 
 @code {
     [Parameter][EditorRequired] public string Name { get; set; }
+    [Inject] IQuestionEndpoints QuestionEndpoints { get; set; }
+
+    public List<Question> Questions { get; set; } = new();
+
+    protected override async Task OnInitializedAsync() => Questions = await QuestionEndpoints.GetQuestions();
 }
