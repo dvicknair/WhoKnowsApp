@@ -65,22 +65,22 @@ using (var scope = app.Services.CreateScope())
             Name = "Who Knows Bob",
             Riddles = [
                 new() {
-                        Question = "What is Bob's favorite color?",
+                        Question = "What is Katie's birthday?",
                         Answers = [
-                            new() { Text = "Red" },
-                            new() { Text = "Blue" },
-                            new() { Text = "Green" },
-                            new() { Text = "Purple" },
+                            new() { Text = "December 6" },
+                            new() { Text = "November 31" },
+                            new() { Text = "December 8" },
+                            new() { Text = "November 30" },
                         ],
-                        AnswerId = 2
+                        AnswerId = 3
                     },
                     new() {
-                        Question = "What is Bob's favorite food?",
+                        Question = "What city was Katie born in?",
                         Answers = [
-                            new() { Text = "Pizza" },
-                            new() { Text = "Tacos" },
-                            new() { Text = "Ice Cream" },
-                            new() { Text = "Hot Dogs" },
+                            new() { Text = "Independence" },
+                            new() { Text = "Bogalusa" },
+                            new() { Text = "Hammond" },
+                            new() { Text = "Covington" },
                         ],
                         AnswerId = 6
                     }

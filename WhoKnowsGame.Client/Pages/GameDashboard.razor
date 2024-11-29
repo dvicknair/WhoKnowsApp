@@ -4,38 +4,59 @@
 @using WhoKnowsGame.Shared.Models
 @rendermode @(new InteractiveAutoRenderMode(false))
 
-@if(Game?.Status == 0){
-    <FluentButton OnClick="StartGame">Start Game</FluentButton>
-}else{
-    @if (!GameFinished && Game != null)
-    {
-        <div>@Game.Riddles.ElementAt(CurrentRiddle).Question</div>
-        @foreach (var answer in @Game.Riddles.ElementAt(CurrentRiddle).Answers)
-        {
-            <div>@answer.Text</div>
-        }
-        if (CurrentRiddle < Game.Riddles.Count - 1)
-        {
-            <FluentButton OnClick="NextRiddle">Next Riddle</FluentButton>
-        }
-        else
-        {
-            <FluentButton OnClick="FinishGame">See Results</FluentButton>
-        }
-    }
-    @if (GameFinished)
-    {
-        <h1>Results</h1>
-        @foreach (var player in Players.OrderByDescending(x => x.NumberOfCorrectAnswers))
-        {
-            <div @key="player.Id">
-                @* <img src="data:image;base64, @System.Convert.ToBase64String(player.Image.Image)" height="200" width="200"> *@
-                @player.NumberOfCorrectAnswers - @player.FullName
+<div class="dashboard">
+    @if(Game?.Status == 0){
+        <div class="pre-game">
+            <div>
+                <div>Who knows Katie best!</div>
+                <FluentButton OnClick="StartGame">Start Game</FluentButton>
             </div>
-        }
+            <div>
+                <div>Players (@Players.Count)</div>
+                <hr />
+                @foreach (var player in Players)
+                {
+                    <div @key="player.Id">
+                        @* <img src="data:image;base64, @System.Convert.ToBase64String(player.Image.Image)" height="200" width="200"> *@
+                        @player.FullName
+                    </div>
+                }
+            </div>
+        </div>
     }
-
-}
+    else
+    {
+        <div class="riddle">
+            @if (!GameFinished && Game != null)
+            {
+                <div class="question">@Game.Riddles.ElementAt(CurrentRiddle).Question</div>
+                @foreach (var answer in @Game.Riddles.ElementAt(CurrentRiddle).Answers)
+                {
+                    <div class="dashboard-answer">@answer.Text</div>
+                }
+                if (CurrentRiddle < Game.Riddles.Count - 1)
+                {
+                    <FluentButton OnClick="NextRiddle">Next Riddle</FluentButton>
+                }
+                else
+                {
+                    <FluentButton OnClick="FinishGame">See Results</FluentButton>
+                }
+            }
+            @if (GameFinished)
+            {
+                <h1>Results</h1>
+                @foreach (var player in Players.OrderByDescending(x => x.NumberOfCorrectAnswers))
+                {
+                    <div @key="player.Id">
+                        @* <img src="data:image;base64, @System.Convert.ToBase64String(player.Image.Image)" height="200" width="200"> *@
+                        @player.NumberOfCorrectAnswers - @player.FullName
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>
 
 @code {
 

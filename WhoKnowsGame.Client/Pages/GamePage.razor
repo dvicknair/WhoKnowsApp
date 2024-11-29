@@ -7,56 +7,58 @@
 
 <PageTitle>@CurrentGame?.Name</PageTitle>
 
-<h1>@CurrentGame?.Name</h1>
-
-@if(Player is null)
-{
-    <EditForm Model="@EnterGameDto" OnValidSubmit="@HandleEnterGameRequest" FormName="Handle_Enter_Game_Request" novalidate>
-        <DataAnnotationsValidator />
-        <FluentValidationSummary />
-
-        <FluentStack Orientation="Orientation.Vertical">
-            <div>
-                <FluentTextField Name="FirstName" @bind-Value="EnterGameDto.FirstName" Label="FirstName" Required />
-                <FluentValidationMessage For="@(() => EnterGameDto.FirstName)" />
-            </div>
-            <div>
-                <FluentTextField Name="LastName" @bind-Value="EnterGameDto.LastName" Label="LastName" Required />
-                <FluentValidationMessage For="@(() => EnterGameDto.LastName)" />
-            </div>
-            <div>
-                <InputFile class="form-control" OnChange="@OnInputFileChange" />
-            </div>
-            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Start</FluentButton>
-        </FluentStack>
-    </EditForm>
-}
-else
-{
-    <div>Welcome @Player.FirstName</div>
-
-    @if (CurrentGame != null)
+<div class="game-page">
+    @if (Player is null)
     {
-        if (CurrentGame.Status == 0)
-        {
-            <div>Waiting for game to begin</div>
-        }
-        else if(CurrentGame.Status == 1)
-        {
-            <div>@CurrentGame.Riddles.ElementAt(CurrentRiddle).Question</div>
-            <FluentRadioGroup Name="strings" @bind-Value=SelectedAnswerId Label="@CurrentGame.Riddles.ElementAt(CurrentRiddle).Question">
-                @foreach (var answer in @CurrentGame.Riddles.ElementAt(CurrentRiddle).Answers)
-                {
-                    <FluentRadio Value="@answer.Id">@answer.Text</FluentRadio>
-                }
-            </FluentRadioGroup>
-        }
-        else if(CurrentGame.Status == 2)
-        {
-            <h1>Thanks for playing!</h1>
-        }
+        <EditForm Model="@EnterGameDto" OnValidSubmit="@HandleEnterGameRequest" FormName="Handle_Enter_Game_Request" novalidate>
+            <DataAnnotationsValidator />
+            <FluentValidationSummary />
+                <div>
+                    <FluentTextField Name="FirstName" @bind-Value="EnterGameDto.FirstName" Label="First Name" Style="color: #FAB0BC" Required />
+                    <FluentValidationMessage For="@(() => EnterGameDto.FirstName)" />
+                </div>
+                <div>
+                    <FluentTextField Name="LastName" @bind-Value="EnterGameDto.LastName" Label="Last Name" Style="color: #FAB0BC" Required />
+                    <FluentValidationMessage For="@(() => EnterGameDto.LastName)" />
+                </div>
+                @* <div>
+                    <InputFile class="form-control" OnChange="@OnInputFileChange" />
+                </div> *@
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Join Game!</FluentButton>
+        </EditForm>
     }
-}
+    else
+    {
+        <div class="riddle">
+            @if (CurrentGame != null)
+            {
+                if (CurrentGame.Status == 0)
+                {
+                    <div>Waiting for game to begin</div>
+                }
+                else if (CurrentGame.Status == 1)
+                {
+                    <div>@CurrentGame.Riddles.ElementAt(CurrentRiddle).Question</div>
+                    <div class="choices">
+                        @* <FluentRadioGroup Name="strings" @bind-Value=SelectedAnswerId Label="@CurrentGame.Riddles.ElementAt(CurrentRiddle).Question"> *@
+                            @foreach (var answer in @CurrentGame.Riddles.ElementAt(CurrentRiddle).Answers)
+                            {
+                                <div class="choice @(SelectedAnswerId == answer.Id ? "selected" : "")" @onclick="() => SelectedAnswerId = answer.Id">
+                                    @answer.Text
+                                </div>
+                                @* <FluentRadio Value="@answer.Id">@answer.Text</FluentRadio> *@
+                            }
+                        @* </FluentRadioGroup> *@
+                    </div>
+                }
+                else if (CurrentGame.Status == 2)
+                {
+                    <h1>Thanks for playing!</h1>
+                }
+            }
+        </div>
+    }
+</div>
 
 @implements IAsyncDisposable
 @code {
