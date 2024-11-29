@@ -1,0 +1,138 @@
+﻿@page "/{gameId:int}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using WhoKnowsGame.Shared.Dtos
+@using WhoKnowsGame.Shared.Interfaces
+@using WhoKnowsGame.Shared.Models
+@rendermode @(new InteractiveAutoRenderMode(false))
+
+<PageTitle>@CurrentGame?.Name</PageTitle>
+
+<h1>@CurrentGame?.Name</h1>
+
+@if(Player is null)
+{
+    <EditForm Model="@EnterGameDto" OnValidSubmit="@HandleEnterGameRequest" FormName="Handle_Enter_Game_Request" novalidate>
+        <DataAnnotationsValidator />
+        <FluentValidationSummary />
+
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>
+                <FluentTextField Name="FirstName" @bind-Value="EnterGameDto.FirstName" Label="FirstName" Required />
+                <FluentValidationMessage For="@(() => EnterGameDto.FirstName)" />
+            </div>
+            <div>
+                <FluentTextField Name="LastName" @bind-Value="EnterGameDto.LastName" Label="LastName" Required />
+                <FluentValidationMessage For="@(() => EnterGameDto.LastName)" />
+            </div>
+            <div>
+                <InputFile class="form-control" OnChange="@OnInputFileChange" />
+            </div>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Start</FluentButton>
+        </FluentStack>
+    </EditForm>
+}
+else
+{
+    <div>Welcome @Player.FirstName</div>
+
+    @if (CurrentGame != null)
+    {
+        if (CurrentGame.Status == 0)
+        {
+            <div>Waiting for game to begin</div>
+        }
+        else if(CurrentGame.Status == 1)
+        {
+            <div>@CurrentGame.Riddles.ElementAt(CurrentRiddle).Question</div>
+            <FluentRadioGroup Name="strings" @bind-Value=SelectedAnswerId Label="@CurrentGame.Riddles.ElementAt(CurrentRiddle).Question">
+                @foreach (var answer in @CurrentGame.Riddles.ElementAt(CurrentRiddle).Answers)
+                {
+                    <FluentRadio Value="@answer.Id">@answer.Text</FluentRadio>
+                }
+            </FluentRadioGroup>
+        }
+        else if(CurrentGame.Status == 2)
+        {
+            <h1>Thanks for playing!</h1>
+        }
+    }
+}
+
+@implements IAsyncDisposable
+@code {
+    [Parameter] public int gameId { get; set; }
+    [Inject] IGameService GameService { get; set; }
+    [Inject] NavigationManager Navigation { get; set; }
+    private EnterGameDto EnterGameDto { get; set; } = new();
+    private Game CurrentGame { get; set; }
+    private int CurrentRiddle { get; set; }
+    private int SelectedAnswerId { get; set; }
+    private Player Player { get; set; }
+
+    private HubConnection? hubConnection;
+    private List<Player> Players = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        EnterGameDto.GameId = gameId;
+        CurrentGame = await GameService.GetGame(gameId);
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
+            .Build();
+
+        hubConnection.On<int>("ReceiveGameStarted", async (gameId) =>
+        {
+            CurrentGame.Status = 1;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<int>("ReceiveNextRiddle", async (riddleIndex) =>
+        {
+            await GameService.AnswerRiddle(new AnswerRiddleDto { PlayerId = Player.Id, RiddleId = CurrentGame.Riddles.ElementAt(CurrentRiddle).Id, AnswerId = SelectedAnswerId });
+            SelectedAnswerId = default;
+            CurrentRiddle = riddleIndex;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On("ReceiveFinishGame", async () =>
+        {
+            await GameService.AnswerRiddle(new AnswerRiddleDto { PlayerId = Player.Id, RiddleId = CurrentGame.Riddles.ElementAt(CurrentRiddle).Id, AnswerId = SelectedAnswerId });
+            CurrentGame.Status = 2;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        IBrowserFile imgFile = e.File;
+        var buffers = new byte[imgFile.Size];
+        await imgFile.OpenReadStream(maxAllowedSize: 51200000).ReadAsync(buffers);
+        //EnterGameDto.Image = $"data:{imgFile.ContentType};base64,{Convert.ToBase64String(buffers)}";
+        EnterGameDto.Image = buffers;
+    }
+
+    void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
+    {
+    }
+
+    private async Task HandleEnterGameRequest()
+    {
+        Player = await GameService.EnterGame(EnterGameDto);
+        await Send(Player);
+    }
+
+    private async Task Send(Player player)
+    {
+        if (hubConnection is not null) await hubConnection.SendAsync("ReportNewPlayer", player);
+    }
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null) await hubConnection.DisposeAsync();
+    }
+}

@@ -1,0 +1,109 @@
+﻿@page "/dashboard/{gameId:int}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using WhoKnowsGame.Shared.Interfaces
+@using WhoKnowsGame.Shared.Models
+@rendermode @(new InteractiveAutoRenderMode(false))
+
+@if(Game?.Status == 0){
+    <FluentButton OnClick="StartGame">Start Game</FluentButton>
+}else{
+    @if (!GameFinished && Game != null)
+    {
+        <div>@Game.Riddles.ElementAt(CurrentRiddle).Question</div>
+        @foreach (var answer in @Game.Riddles.ElementAt(CurrentRiddle).Answers)
+        {
+            <div>@answer.Text</div>
+        }
+        if (CurrentRiddle < Game.Riddles.Count - 1)
+        {
+            <FluentButton OnClick="NextRiddle">Next Riddle</FluentButton>
+        }
+        else
+        {
+            <FluentButton OnClick="FinishGame">See Results</FluentButton>
+        }
+    }
+    @if (GameFinished)
+    {
+        <h1>Results</h1>
+        @foreach (var player in Players.OrderByDescending(x => x.NumberOfCorrectAnswers))
+        {
+            <div @key="player.Id">
+                @* <img src="data:image;base64, @System.Convert.ToBase64String(player.Image.Image)" height="200" width="200"> *@
+                @player.NumberOfCorrectAnswers - @player.FullName
+            </div>
+        }
+    }
+
+}
+
+@code {
+
+    [Parameter] public int gameId { get; set; }
+
+    [Inject] IGameService GameService { get; set; }
+    [Inject] NavigationManager Navigation { get; set; }
+    private Game Game { get; set; }
+    private int CurrentRiddle { get; set; }
+    private bool GameFinished{ get; set; }
+
+    private HubConnection? hubConnection;
+    private List<Player> Players = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Game = await GameService.GetGame(gameId);
+        Players = await GameService.GetPlayers(gameId);
+
+        if (!IsConnected)
+        {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
+                .Build();
+
+            hubConnection.On<Player>("ReceiveNewPlayer", (player) =>
+            {
+                Players.Add(player);
+                InvokeAsync(StateHasChanged);
+            });
+            hubConnection.On<int>("ReceiveGameStarted", async (gameId) =>
+            {
+                Game.Status = 1;
+                await InvokeAsync(StateHasChanged);
+            });
+
+            hubConnection.On<int>("ReceiveNextRiddle", async (riddleIndex) =>
+            {
+                CurrentRiddle = riddleIndex;
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
+        }
+    }
+
+    private async Task StartGame()
+    {
+        await GameService.StartGame(gameId);
+        if (hubConnection is not null) await hubConnection.SendAsync("ReportGameStarted", gameId);
+    }
+
+    private async Task NextRiddle()
+    {
+        if (hubConnection is not null) await hubConnection.SendAsync("ReportNextRiddle", CurrentRiddle + 1);
+    }
+
+    private async Task FinishGame()
+    {
+        if (hubConnection is not null) await hubConnection.SendAsync("ReportFinishGame");
+        Players = await GameService.GetGameResults(gameId);
+        GameFinished = true;
+    }
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null) await hubConnection.DisposeAsync();
+    }
+}
