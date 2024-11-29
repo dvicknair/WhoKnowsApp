@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
 using System.Text.Json.Serialization;
 using WhoKnowsGame.Components;
@@ -17,12 +18,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddDbContext<WhoKnowsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("WhoKnowsDbContext")));
+
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-
 
 builder.Services.AddFluentUIComponents();
 

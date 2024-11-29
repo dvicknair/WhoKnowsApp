@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.FluentUI.AspNetCore.Components;
 using WhoKnowsGame.Client.Services;
+using WhoKnowsGame.Shared.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
