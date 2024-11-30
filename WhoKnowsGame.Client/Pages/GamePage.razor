@@ -12,19 +12,20 @@
     {
         <EditForm Model="@EnterGameDto" OnValidSubmit="@HandleEnterGameRequest" FormName="Handle_Enter_Game_Request" novalidate>
             <DataAnnotationsValidator />
-            <FluentValidationSummary />
-                <div>
-                    <FluentTextField Name="FirstName" @bind-Value="EnterGameDto.FirstName" Label="First Name" Style="color: #FAB0BC" Required />
-                    <FluentValidationMessage For="@(() => EnterGameDto.FirstName)" />
-                </div>
-                <div>
-                    <FluentTextField Name="LastName" @bind-Value="EnterGameDto.LastName" Label="Last Name" Style="color: #FAB0BC" Required />
-                    <FluentValidationMessage For="@(() => EnterGameDto.LastName)" />
-                </div>
-                @* <div>
-                    <InputFile class="form-control" OnChange="@OnInputFileChange" />
-                </div> *@
-                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Join Game!</FluentButton>
+            <div>
+                <div><label>First Name</label></div>
+                <InputText @bind-Value="EnterGameDto.FirstName" style="background-color: #FAB0BC; border: 1px solid grey;height: 2rem;" />
+                <ValidationMessage For="@(() => EnterGameDto.FirstName)" />
+            </div>
+            <div>
+                <div><label>Last Name</label></div>
+                <InputText @bind-Value="EnterGameDto.LastName" style="background-color: #FAB0BC; border: 1px solid grey;height: 2rem;" />
+                <ValidationMessage For="@(() => EnterGameDto.LastName)" />
+            </div>
+            @* <div>
+                <InputFile class="form-control" OnChange="@OnInputFileChange" />
+            </div> *@
+            <FluentButton Type="ButtonType.Submit">Join</FluentButton>
         </EditForm>
     }
     else

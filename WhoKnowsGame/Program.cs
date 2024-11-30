@@ -18,7 +18,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddDbContext<WhoKnowsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("WhoKnowsDbContext")));
+builder.Services.AddDbContext<WhoKnowsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("WhoKnowsDbContext"),
+    sqlServerOptions => sqlServerOptions.CommandTimeout(120)));
 
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
